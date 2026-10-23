@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cepteki Su Tasarrufu - Mobil Prototip</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts (Inter & Poppins) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind Yapılandırması -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            poppins: ['Poppins', 'sans-serif'],
+            inter: ['Inter', 'sans-serif']
+          },
+          colors: {
+            brand: {
+              50: '#eff9ff',
+              100: '#def1ff',
+              200: '#b6e4ff',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              green: '#22c55e',
+              emerald: '#10b981'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Harici Özel Stiller -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 text-slate-800">
+
+  <!-- Üst Tanıtım Başlığı -->
+  <div class="mockup-controls mb-4 text-center max-w-lg">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold uppercase tracking-wider mb-1.5 shadow-sm">
+      <i class="fa-solid fa-droplet text-blue-500"></i> Akıllı Su Takip & Tasarruf Asistanı
+    </div>
+    <h1 class="text-xl sm:text-2xl font-bold font-poppins text-slate-800">Cepteki Su Tasarrufu</h1>
+    <p class="text-xs text-slate-500">Mobil Su Yönetim Prototipi • Canlı Simülatör</p>
+  </div>
+
+  <!-- Mobil Arayüz Çerçevesi (iPhone Mockup) -->
+  <div class="phone-container">
+    
+    <!-- iPhone Dinamik Ada / Çentik -->
+    <div class="notch">
+      <div class="sensor"></div>
+      <div class="camera"></div>
+    </div>
+
+    <!-- Mobil Durum Çubuğu (Status Bar) -->
+    <div class="pt-3 px-7 pb-1 flex justify-between items-center text-[12px] font-semibold text-slate-700 z-40 select-none">
+      <span id="current-clock" class="tracking-tight">08:02</span>
+      <div class="flex items-center gap-2 text-slate-600 text-[11px]">
+        <i class="fa-solid fa-signal"></i>
+        <i class="fa-solid fa-wifi"></i>
+        <div class="flex items-center">
+          <span class="text-[10px] mr-1">88%</span>
+          <i class="fa-solid fa-battery-three-quarters text-emerald-600 text-[13px]"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANA İÇERİK ALANI (Scroll Edilebilir) -->
+    <div class="flex-1 overflow-y-auto overflow-x-hidden relative" id="main-scroll-view">
+      
+      <!-- ============================================== -->
+      <!-- SEKME 1: GÜNLÜK TÜKETİM (GÜNLÜK EKRANI) -->
+      <!-- ============================================== -->
+      <section id="tab-daily" class="tab-content active h-full px-5 pt-3 pb-6">
+        
+        <!-- Üst Başlık ve İnteraktif Takvim Seçici -->
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2.5 cursor-pointer group" onclick="openCalendarModal()" title="Geçmiş Günleri Görüntüle">
+            <button class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition shadow-sm">
+              <i class="fa-regular fa-calendar-days text-sm"></i>
+            </button>
+            <div>
+              <h2 class="text-base font-bold font-poppins text-slate-800 leading-tight flex items-center gap-1.5">
+                Tüketilen Su <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 group-hover:text-blue-600 transition"></i>
+              </h2>
+              <span id="selected-date-label" class="text-[11px] font-medium text-slate-500">11 Kasım 2024 • Bugün</span>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <!-- Seri (Streak) Rozeti -->
+            <div class="flex items-center gap-1 bg-amber-50 text-amber-600 border border-amber-200 px-2.5 py-1 rounded-full text-xs font-bold" title="7 Günlük Tasarruf Serisi">
+              <i class="fa-solid fa-fire text-amber-500 animate-pulse"></i> 7 Gün Seri
+            </div>
+          </div>
+        </div>
+
+        <!-- Tüketim Kalemleri Listesi -->
+        <div class="mt-3 space-y-2.5">
+          
+          <!-- İçme Suyu (Litre Bazlı) -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/50 border border-slate-100/80 transition group shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-base shadow-sm shrink-0">
+                <i class="fa-solid fa-mug-hot"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-slate-800 leading-snug">İçme Suyu</h3>
+                <p class="text-[11px] text-slate-500">Kahve, çay, içme suyu</p>
+              </div>
+            </div>
+            <!-- Ekle / Çıkar Sayacı -->
+            <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm shrink-0">
+              <button onclick="updateConsumption('drink', -1)" class="w-6 h-6 rounded-lg bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs active:scale-90 transition" title="1L Azalt">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span id="val-drink" class="text-sm font-bold font-poppins text-slate-800 min-w-[34px] text-center">5L</span>
+              <button onclick="updateConsumption('drink', 1)" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center text-xs active:scale-90 transition" title="1L Ekle">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bulaşık (Makine & Elde Yıkama Ayrımı) -->
+          <div class="p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/40 border border-slate-100/90 shadow-sm space-y-2 transition">
+            <!-- Başlık & Toplam Litre Rozeti -->
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-200/60">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-sm shadow-sm shrink-0">
+                  <i class="fa-solid fa-utensils"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-800 leading-snug">Bulaşık</h3>
+                  <p class="text-[10px] text-slate-500">Makine ve elde yıkama toplamı</p>
+                </div>
+              </div>
+              <span id="val-dishes-total" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-poppins">27L</span>
+            </div>
+            
+            <!-- 1. Bulaşık Makinesi Alt Satırı -->
+            <div class="flex items-center justify-between pl-1">
+              <div>
+                <div class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+                  <span>Makinede</span>
+                  <button onclick="toggleDishMode()" id="btn-dish-mode" class="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 transition" title="Program Modunu Değiştir">
+                    Eko (12L)
+                  </button>
+                </div>
+                <p id="sub-dish-machine" class="text-[10px] text-slate-400">1 çalıştırma · 12L (12L/çlş)</p>
+              </div>
+              <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm shrink-0">
+                <button onclick="updateConsumption('dishMachineCycles', -1)" class="w-6 h-6 rounded-lg bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs active:scale-90 transition" title="1 Çalıştırma Azalt">
+                  <i class="fa-solid fa-minus"></i>
+                </button>
+                <span id="val-dish-machine" class="text-xs font-bold font-poppins text-slate-800 min-w-[32px] text-center">1 çlş</span>
+                <button onclick="updateConsumption('dishMachineCycles', 1)" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center text-xs active:scale-90 transition" title="1 Çalıştırma Ekle">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Elde Bulaşık Yıkama Alt Satırı (Dakika Hesabı) -->
+            <div class="flex items-center justify-between pl-1 pt-1.5 border-t border-slate-200/50">
+              <div>
+                <div class="text-xs font-medium text-slate-700">Elde Yıkama (Musluk)</div>
+                <p id="sub-dish-hand" class="text-[10px] text-slate-400">3 dakika · 15L (5L/dk)</p>
+              </div>
+              <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm shrink-0">
+                <button onclick="updateConsumption('dishHandMins', -1)" class="w-6 h-6 rounded-lg bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs active:scale-90 transition" title="1 Dakika Azalt">
+                  <i class="fa-solid fa-minus"></i>
+                </button>
+                <span id="val-dish-hand" class="text-xs font-bold font-poppins text-slate-800 min-w-[32px] text-center">3 dk</span>
+                <button onclick="updateConsumption('dishHandMins', 1)" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center text-xs active:scale-90 transition" title="1 Dakika Ekle">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Duş (DAKİKA BAZLI: 1 dk = 5L) -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/50 border border-slate-100/80 transition group shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center text-base shadow-sm shrink-0">
+                <i class="fa-solid fa-shower"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-slate-800 leading-snug">Duş</h3>
+                <p id="sub-shower" class="text-[11px] text-slate-500">8 dakika duş · 40L su (5L/dk)</p>
+              </div>
+            </div>
+            <!-- Dakika Sayacı -->
+            <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm shrink-0">
+              <button onclick="updateConsumption('showerMins', -1)" class="w-6 h-6 rounded-lg bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs active:scale-90 transition" title="1 Dakika Azalt">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span id="val-shower" class="text-sm font-bold font-poppins text-slate-800 min-w-[38px] text-center">8 dk</span>
+              <button onclick="updateConsumption('showerMins', 1)" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center text-xs active:scale-90 transition" title="1 Dakika Ekle">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Çamaşır Makinesi (Çalıştırma & Mod Bazlı) -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/50 border border-slate-100/80 transition group shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-base shadow-sm shrink-0">
+                <i class="fa-solid fa-shirt"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h3 class="text-sm font-semibold text-slate-800 leading-snug">Çamaşır</h3>
+                  <!-- Mod Değiştirme Butonu -->
+                  <button onclick="toggleClothesMode()" id="btn-clothes-mode" class="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 transition" title="Program Modunu Değiştir">
+                    Eko (20L)
+                  </button>
+                </div>
+                <p id="sub-clothes" class="text-[11px] text-slate-500">1 çalıştırma · 20L (Eko Mod)</p>
+              </div>
+            </div>
+            <!-- Çalıştırma Sayacı -->
+            <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm shrink-0">
+              <button onclick="updateConsumption('clothesCycles', -1)" class="w-6 h-6 rounded-lg bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs active:scale-90 transition" title="1 Çalıştırma Azalt">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span id="val-clothes" class="text-sm font-bold font-poppins text-slate-800 min-w-[34px] text-center">1 çlş</span>
+              <button onclick="updateConsumption('clothesCycles', 1)" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center text-xs active:scale-90 transition" title="1 Çalıştırma Ekle">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Araç Yıkama (DAKİKA BAZLI: 1 dk = 10L) -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-blue-50/50 border border-slate-100/80 transition group shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-base shadow-sm shrink-0">
+                <i class="fa-solid fa-car-side"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-slate-800 leading-snug">Araç Yıkama</h3>
+                <p id="sub-washingCar" class="text-[11px] text-slate-500">6 dakika hortum · 62L su (10L/dk)</p>
+              </div>
+            </div>
+            <!-- Dakika Sayacı -->
+            <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm shrink-0">
+              <button onclick="updateConsumption('washingCarMins', -1)" class="w-6 h-6 rounded-lg bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs active:scale-90 transition" title="1 Dakika Azalt">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span id="val-washingCar" class="text-sm font-bold font-poppins text-slate-800 min-w-[38px] text-center">6 dk</span>
+              <button onclick="updateConsumption('washingCarMins', 1)" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center text-xs active:scale-90 transition" title="1 Dakika Ekle">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alt Kısım: Dairesel Gösterge & Seçili Gün Tüketimi -->
+        <div class="mt-4 p-4 rounded-3xl bg-gradient-to-br from-slate-50 to-blue-50/40 border border-slate-200/70 shadow-sm flex items-center justify-between">
+          <!-- Circular Gauge -->
+          <div class="relative w-28 h-28 flex items-center justify-center shrink-0">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="38" stroke="#e2e8f0" stroke-width="8" fill="transparent" stroke-linecap="round" />
+              <circle id="gauge-circle" cx="50" cy="50" r="38" stroke="url(#gaugeGradient)" stroke-width="8" 
+                      fill="transparent" stroke-linecap="round"
+                      stroke-dasharray="238.76" stroke-dashoffset="28.65" 
+                      class="progress-ring__circle" />
+              <defs>
+                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#22c55e" />
+                  <stop offset="70%" stop-color="#0ea5e9" />
+                  <stop offset="100%" stop-color="#e11d48" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span id="gauge-percent" class="text-xl font-extrabold font-poppins text-slate-800 tracking-tight">88%</span>
+              <span class="text-[9px] uppercase font-bold text-amber-600 tracking-wider">Kapasite</span>
+            </div>
+          </div>
+
+          <!-- Tüketim Rakamı Metni -->
+          <div class="flex-1 pl-4 text-right">
+            <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Günün Tüketimi</div>
+            <div class="text-3xl font-black font-poppins text-slate-900 tracking-tight flex items-baseline justify-end gap-1">
+              <span id="total-liters">154</span><span class="text-lg font-bold text-blue-600">L</span>
+            </div>
+            <p id="limit-warning" class="text-[11px] text-amber-600 font-medium mt-0.5">
+              <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Günlük limite yakın!
+            </p>
+            <div class="mt-2 flex justify-end">
+              <button onclick="switchTab('reports')" class="px-2.5 py-1 rounded-xl bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700 transition flex items-center gap-1 shadow-sm">
+                Analizi Gör <i class="fa-solid fa-arrow-right text-[9px]"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ============================================== -->
+      <!-- SEKME 2: RAPORLAR (RAPORLAR EKRANI) -->
+      <!-- ============================================== -->
+      <section id="tab-reports" class="tab-content h-full px-5 pt-3 pb-6">
+        
+        <!-- Üst Başlık & Dönem Seçimi -->
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('daily')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+              <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <h2 class="text-base font-bold font-poppins text-slate-800">Tüketim Raporu</h2>
+          </div>
+          
+          <!-- Aylık / Haftalık Filtre Butonları -->
+          <div class="flex bg-slate-100 p-0.5 rounded-lg text-xs font-semibold">
+            <button id="btn-period-monthly" onclick="setReportPeriod('monthly')" class="px-2.5 py-0.5 rounded-md bg-white text-blue-600 shadow-sm transition font-semibold">Aylık</button>
+            <button id="btn-period-weekly" onclick="setReportPeriod('weekly')" class="px-2.5 py-0.5 rounded-md text-slate-500 hover:text-slate-800 transition font-semibold">Haftalık</button>
+          </div>
+        </div>
+
+        <!-- Doughnut Grafik Konteyneri -->
+        <div class="mt-2 p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center">
+          <div class="relative w-56 h-56">
+            <canvas id="waterDoughnutChart"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span id="chart-period-label" class="text-xs font-medium text-slate-400">Aylık Toplam</span>
+              <span id="chart-total-liters" class="text-2xl font-bold font-poppins text-slate-800">4.320L</span>
+              <span id="chart-saving-pct" class="text-[10px] text-emerald-600 font-semibold">%16 Tasarruf Alanı</span>
+            </div>
+          </div>
+          
+          <!-- Grafik Açıklaması -->
+          <div class="w-full grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3 pt-3 border-t border-slate-200/60 text-xs">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-md bg-sky-500 shrink-0"></span>
+              <span id="legend-car" class="text-slate-600 font-medium truncate">Araç Yıkama (%33.6)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-md bg-cyan-400 shrink-0"></span>
+              <span id="legend-shower" class="text-slate-600 font-medium truncate">Duş (%29.6)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-md bg-orange-400 shrink-0"></span>
+              <span id="legend-dishes" class="text-slate-600 font-medium truncate">Bulaşık (%18.1)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-md bg-purple-500 shrink-0"></span>
+              <span id="legend-clothes" class="text-slate-600 font-medium truncate">Çamaşır (%13.4)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-md bg-amber-400 shrink-0"></span>
+              <span id="legend-drink" class="text-slate-600 font-medium truncate">İçme Suyu (%5.3)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-md bg-emerald-400 shrink-0"></span>
+              <span class="text-slate-600 font-medium truncate">El Yıkama</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tasarruf Önerisi Kutusu -->
+        <div class="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0 text-amber-300 text-sm mt-0.5">
+              <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-blue-100">Kişiselleştirilmiş Tasarruf Önerisi</h4>
+              <p id="advice-text" class="text-xs text-white/95 mt-1 leading-relaxed">
+                Aylık tüketiminizin en büyük payı <strong>Araç Yıkama</strong> ve <strong>Duş</strong> kalemlerinde. Duş sürenizi 2 dakika kısaltıp kova ile yıkama yaparak ayda <strong class="text-amber-200">~650 Litre</strong> su tasarrufu sağlayabilirsiniz!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hedef Durumu -->
+        <div class="mt-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-award"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-800">Dönemsel Hedef Uyumu</div>
+              <div class="text-[11px] text-slate-500">Tasarruf Performans Skoru</div>
+            </div>
+          </div>
+          <span id="score-badge" class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold font-poppins">84/100 Puan</span>
+        </div>
+
+      </section>
+
+
+      <!-- ============================================== -->
+      <!-- SEKME 3: TAVSİYELER & ARAMA (REHBER EKRANI) -->
+      <!-- ============================================== -->
+      <section id="tab-search" class="tab-content h-full px-5 pt-3 pb-6">
+        
+        <div class="pb-2 border-b border-slate-100">
+          <h2 class="text-base font-bold font-poppins text-slate-800">Tasarruf Rehberi & İpuçları</h2>
+          <p class="text-[11px] text-slate-500">Kolay uygulanabilir pratik su koruma yöntemleri</p>
+        </div>
+
+        <!-- Arama Girişi -->
+        <div class="mt-3 relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="tip-search-input" oninput="filterTips()" placeholder="İpucu veya kategori ara (örn: duş, bulaşık)..." 
+                 class="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-100 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Kategori Filtre Butonları -->
+        <div class="flex gap-1.5 mt-2.5 overflow-x-auto pb-1 text-xs no-scrollbar" id="category-pills">
+          <button onclick="setTipCategory('all')" class="cat-pill active px-3 py-1 rounded-full bg-blue-600 text-white font-medium shrink-0 transition shadow-sm">Tümü</button>
+          <button onclick="setTipCategory('banyo')" class="cat-pill px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-medium shrink-0 hover:bg-slate-200 transition">Banyo</button>
+          <button onclick="setTipCategory('mutfak')" class="cat-pill px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-medium shrink-0 hover:bg-slate-200 transition">Mutfak</button>
+          <button onclick="setTipCategory('arac')" class="cat-pill px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-medium shrink-0 hover:bg-slate-200 transition">Araç & Bahçe</button>
+          <button onclick="setTipCategory('genel')" class="cat-pill px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-medium shrink-0 hover:bg-slate-200 transition">Genel</button>
+        </div>
+
+        <!-- Tavsiye Kartları Listesi -->
+        <div class="mt-3 space-y-2.5" id="tips-container"></div>
+
+      </section>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- ALT NAVİGASYON ÇUBUĞU -->
+    <!-- ============================================== -->
+    <nav class="h-16 border-t border-slate-100 bg-white/95 backdrop-blur-md px-6 flex items-center justify-around z-40 select-none shadow-[0_-5px_15px_rgba(0,0,0,0.03)]">
+      
+      <!-- Günlük -->
+      <button onclick="switchTab('daily')" id="nav-btn-daily" class="nav-item group flex flex-col items-center justify-center gap-1 text-blue-600 transition">
+        <div class="w-10 h-7 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 group-hover:scale-105 transition">
+          <i class="fa-solid fa-droplet text-sm"></i>
+        </div>
+        <span class="text-[11px] font-bold font-poppins">Günlük</span>
+      </button>
+
+      <!-- Raporlar -->
+      <button onclick="switchTab('reports')" id="nav-btn-reports" class="nav-item group flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 transition">
+        <div class="w-10 h-7 rounded-xl flex items-center justify-center text-slate-500 group-hover:scale-105 transition">
+          <i class="fa-solid fa-chart-pie text-sm"></i>
+        </div>
+        <span class="text-[11px] font-semibold font-poppins">Raporlar</span>
+      </button>
+
+      <!-- Tavsiyeler -->
+      <button onclick="switchTab('search')" id="nav-btn-search" class="nav-item group flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 transition">
+        <div class="w-10 h-7 rounded-xl flex items-center justify-center text-slate-500 group-hover:scale-105 transition">
+          <i class="fa-solid fa-lightbulb text-sm"></i>
+        </div>
+        <span class="text-[11px] font-semibold font-poppins">Tavsiyeler</span>
+      </button>
+
+    </nav>
+
+    <!-- iPhone Home Bar Çizgisi -->
+    <div class="w-full flex justify-center pb-2 bg-white">
+      <div class="w-32 h-1 bg-slate-300 rounded-full"></div>
+    </div>
+
+  </div>
+
+  <!-- Sunum Toast Bildirimi -->
+  <div id="toast" class="fixed bottom-6 bg-slate-900/90 text-white px-4 py-2 rounded-full text-xs font-medium shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-2">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toast-msg">İşlem başarılı</span>
+  </div>
+
+  <!-- İNTERAKTİF TAKVİM MODALI -->
+  <div id="calendar-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative animate-scaleUp">
+      
+      <!-- Başlık & Kapat Butonu -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold font-poppins text-slate-800">Geçmiş Günler</h3>
+          <p class="text-xs text-slate-500">Kasım 2024 Su Tüketim Kayıtları</p>
+        </div>
+        <button onclick="closeCalendarModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Haftanın Günleri -->
+      <div class="grid grid-cols-7 gap-1 text-center mt-3 text-[11px] font-bold text-slate-400">
+        <div>Pt</div>
+        <div>Sa</div>
+        <div>Ça</div>
+        <div>Pe</div>
+        <div>Cu</div>
+        <div>Ct</div>
+        <div>Pz</div>
+      </div>
+
+      <!-- Takvim Günleri Izgarası -->
+      <div id="calendar-days-container" class="grid grid-cols-7 gap-1 text-center mt-2">
+        <!-- JS tarafından doldurulacak -->
+      </div>
+
+      <!-- Renk Lejantı -->
+      <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-around text-[10px] text-slate-500">
+        <div class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Düşük (&lt;130L)
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span> Orta (130-160L)
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span> Yüksek (&gt;160L)
+        </div>
+      </div>
+
+      <!-- Bugüne Dön Butonu -->
+      <div class="mt-4 flex gap-2">
+        <button onclick="selectDate('2024-11-11')" class="flex-1 py-2 rounded-xl bg-blue-50 text-blue-600 font-semibold text-xs hover:bg-blue-100 transition">
+          Bugüne Dön (11 Kasım)
+        </button>
+        <button onclick="closeCalendarModal()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-semibold text-xs hover:bg-slate-200 transition">
+          Kapat
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proje Bilgi Modalı -->
+  <div id="info-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative animate-scaleUp">
+      <button onclick="closeInfoModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 absolute right-4 top-4 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+      <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl mb-3">
+        <i class="fa-solid fa-hand-holding-droplet"></i>
+      </div>
+      <h3 class="text-base font-bold font-poppins text-slate-800">Cepteki Su Tasarrufu</h3>
+      <p class="text-xs text-slate-500 mt-0.5">Akıllı Su Tüketim & Tasarruf Asistanı</p>
+      
+      <div class="mt-4 space-y-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+        <div><strong>Proje:</strong> Cepteki Su Tasarrufu</div>
+        <div><strong>Geliştirici:</strong> Mazlum Arcanlı</div>
+        <div><strong>Kategori:</strong> Çevre & Akıllı Kaynak Yönetimi</div>
+        <div class="pt-2 border-t border-slate-200 text-slate-500 leading-relaxed">
+          Bu prototip sunum ve yarışma gösterimleri için kullanıcı arayüzü, süre/dakika bazlı tüketim sayaçları, takvim geçmişi ve dönemsel tasarruf analizi akışlarını canlı simüle etmek üzere tasarlanmıştır.
+        </div>
+      </div>
+
+      <button onclick="closeInfoModal()" class="w-full mt-4 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700 transition">
+        Anladım
+      </button>
+    </div>
+  </div>
+
+  <!-- Modüler JavaScript Dosyaları -->
+  <script src="js/data.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

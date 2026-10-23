@@ -1,0 +1,129 @@
+/* ========================================================
+   Cepteki Su Tasarrufu - Mobil Prototip Stilleri
+   ======================================================== */
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at top right, #e0f2fe, #f8fafc, #f1f5f9);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Özel kaydırma çubuğu */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Telefon Konteyneri (iPhone Mockup) */
+.phone-container {
+  width: 100%;
+  max-width: 410px;
+  height: 844px;
+  border-radius: 46px;
+  box-shadow: 0 25px 60px -15px rgba(14, 165, 233, 0.25), 0 0 0 10px #1e293b, 0 0 0 13px #334155, 0 35px 50px -10px rgba(0,0,0,0.3);
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* Mobilde ve Küçük Ekranlarda Tam Ekran Görünüm */
+@media (max-width: 640px) {
+  body {
+    background: #ffffff;
+    padding: 0 !important;
+  }
+  .phone-container {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .mockup-controls {
+    display: none !important;
+  }
+}
+
+/* Dinamik Ada / Çentik (Dynamic Island) */
+.notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #0f172a;
+  border-radius: 20px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.camera {
+  width: 11px;
+  height: 11px;
+  background: #1e293b;
+  border-radius: 50%;
+  box-shadow: inset 0 0 3px #0284c7;
+}
+.sensor {
+  width: 7px;
+  height: 7px;
+  background: #1e293b;
+  border-radius: 50%;
+}
+
+/* Dairesel Sayaç Animasyonu (Gauge Ring) */
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Sekme Geçiş Animasyonları */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.22s ease-out forwards;
+}
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(6px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Takvim Hücreleri */
+.cal-day-cell {
+  position: relative;
+  transition: all 0.15s ease;
+}
+.cal-day-cell:active {
+  transform: scale(0.92);
+}
+
